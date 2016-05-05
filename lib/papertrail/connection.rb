@@ -44,6 +44,13 @@ module Papertrail
       find_id_for_item(response.body, name)
     end
 
+    def find_last_log_time(name)
+      response = @connection.get('systems.json')
+
+      item = find_item_by_name(response.body, name)
+      return item['last_event_at']
+    end
+
     def find_id_for_group(name)
       response = @connection.get('groups.json')
       find_id_for_item(response.body, name)

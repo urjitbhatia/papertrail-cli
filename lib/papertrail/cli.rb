@@ -19,6 +19,7 @@ module Papertrail
         :configfile => nil,
         :delay  => 2,
         :follow => false,
+        :last_event_time => false,
         :token  => ENV['PAPERTRAIL_API_TOKEN'],
         :color  => :program,
         :force_color => false,
@@ -44,6 +45,9 @@ module Papertrail
         end
         opts.on("-f", "--follow", "Continue running and printing new events (off)") do |v|
           options[:follow] = true
+        end
+        opts.on("-l", "--last-event-time", "Find the last time this group logged") do |v|
+          options[:last_event_time] = true
         end
         opts.on("--min-time MIN", "Earliest time to search from") do |v|
           options[:min_time] = v
@@ -104,9 +108,18 @@ module Papertrail
       end
 
       if options[:group]
-        query_options[:group_id] = connection.find_id_for_group(options[:group])
-        unless query_options[:group_id]
-          abort "Group \"#{options[:group]}\" not found"
+          if options[:last_event_time]
+              group_last_event_time = connection.find_last_log_time(options[:group])
+              $stdout.puts group_last_event_time
+              unless group_last_event_time
+              abort "Group \"#{options[:group]}\" not found"
+            end
+            exit
+          else
+            query_options[:group_id] = connection.find_id_for_group(options[:group])
+            unless query_options[:group_id]
+              abort "Group \"#{options[:group]}\" not found"
+            end
         end
       end
 
